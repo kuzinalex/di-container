@@ -19,13 +19,13 @@ public class InjectorImpl implements Injector {
     private Map<Class, Object> singletons = new HashMap<>();
 
     @Override
-    public synchronized <T> Provider<T> getProvider(Class<T> type) throws BindingNotFoundException, ConstructorNotFoundException, TooManyConstructorsException {
+    public synchronized <T> Provider<T> getProvider(Class<T> type) throws TooManyConstructorsException {
 
         boolean isSingleton;
         List<Constructor<?>> annotatedConstructors = new ArrayList<>();
         Class<?> bindingType;
 
-        if (singletons.containsKey(type)){
+        if (singletons.containsKey(type)) {
             return () -> (T) singletons.get(type);
         }
 
@@ -52,7 +52,9 @@ public class InjectorImpl implements Injector {
 
             return () -> {
                 try {
-                    if (isSingleton) {
+                    if (singletons.containsKey(type)) {
+                        return (T) singletons.get(type);
+                    } else if (isSingleton) {
                         singletons.put(type, bindingType.newInstance());
                         return (T) singletons.get(type);
                     } else {
